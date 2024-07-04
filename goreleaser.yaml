@@ -12,7 +12,7 @@ env:
 
 builds:
   - id: "acr-cache-proxy"
-    main: "./cmd/acr-cache-proxy"
+    main: "."
     binary: "acr-cache-proxy"
     mod_timestamp: "{{ .CommitTimestamp }}"
     goos: ["linux", "darwin", "windows", "freebsd"]
