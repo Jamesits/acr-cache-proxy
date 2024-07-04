@@ -1,0 +1,66 @@
+# IDEA auto formatter is causing trouble
+# @formatter:off
+before:
+  hooks:
+    - "go mod verify"
+
+env:
+  - "GO111MODULE=on"
+  - "CGO_ENABLED=0"
+
+builds:
+  - id: "acr-cache-proxy"
+    main: "./cmd/acr-cache-proxy"
+    binary: "acr-cache-proxy"
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos: ["linux", "darwin", "windows", "freebsd"]
+    goarch: ["amd64", "arm", "arm64"]
+    goarm: ["6", "7"]
+    goamd64: ["v1", "v2", "v3", "v4"]
+    flags:
+      - "-v"
+      - "-trimpath"
+      - "-buildvcs=true"
+    asmflags:
+      - "all=-trimpath={{ .Env.GOPATH }}"
+    gcflags:
+      - "all=-trimpath={{ .Env.GOPATH }}"
+    ldflags:
+      - "-s"
+      - "-w"
+    hooks:
+      post:
+        - "sh -c 'upx \"{{ .Path }}\" || true'"
+        - "sudo setcap 'cap_net_bind_service=+ep' \"{{ .Path }}\""
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+archives:
+  - id: "release"
+    format: "tar.xz"
+    wrap_in_directory: true
+    rlcp: true
+
+dockers:
+  - dockerfile: "Dockerfile.goreleaser"
+    image_templates:
+      - jamesits/acr-cache-proxy:latest
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: "sha256"
+
+changelog:
+  sort: "asc"
+  filters:
+    exclude:
+      - "^doc:"
+      - "^docs:"
+      - "^test:"
+      - "^cleanup:"
+      - "^ci:"
+      - "typo"
+      - "readme"
+      - "README"
+      - "comment"
