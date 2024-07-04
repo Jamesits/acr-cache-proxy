@@ -1,5 +1,7 @@
 # IDEA auto formatter is causing trouble
 # @formatter:off
+version: 2
+
 before:
   hooks:
     - "go mod verify"
@@ -40,7 +42,6 @@ archives:
   - id: "release"
     format: "tar.xz"
     wrap_in_directory: true
-    rlcp: true
 
 dockers:
   - dockerfile: "Dockerfile.goreleaser"
