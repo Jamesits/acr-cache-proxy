@@ -2,6 +2,8 @@
 
 Azure Container Registry as an auto-authorized, pull-through Docker Hub proxy.
 
+![Works - On My Machine](https://img.shields.io/badge/Works-On_My_Machine-2ea44f)
+
 ## Usage
 
 Config ACR as a pull-through proxy:
