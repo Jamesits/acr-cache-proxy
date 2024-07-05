@@ -14,10 +14,14 @@ resource "azurerm_container_registry_cache_rule" "docker-io" {
 } 
 ```
 
-Make sure [you have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential).
+Make sure you [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential).
 
 Start the server locally:
 ```shell
+# if using a specific user-managed identity
+export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
+# otherwise, log in first with `az login`
+
 acr-cache-proxy --upstream-domain example.azurecr.io --upstream-prefix hub --listen-address :8080
 ```
 Or use a service manager:
@@ -32,3 +36,19 @@ Config your Docker daemon to use the mirror in `/etc/docker/daemon.json`:
 ```
 
 Restart your Docker daemon and profit.
+
+### Command Line Arguments
+
+- `--upstream-domain` (required): your Azure Container Registry domain
+- `--upstream-prefix` (optional): the cache rule prefix (without `/`)
+- `--listen-address` (optional): HTTP proxy listen address (Golang format)
+
+## Notes
+
+### Security
+
+Docker [does not support any form of authentication on registry mirrors](https://github.com/moby/moby/issues/30880), so no authentication can be implemented. Please protect the HTTP endpoint from untrusted networks. It's better to run one instance per host, and only listen on the loopback address.
+
+### Availability
+
+`registry-mirrors` option is failsafe. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
