@@ -4,16 +4,22 @@ Azure Container Registry as an auto-authorized, pull-through Docker Hub proxy.
 
 ![Works - On My Machine](https://img.shields.io/badge/Works-On_My_Machine-2ea44f)
 
+Features:
+
+- Supports a cache rule with a prefix (works around an [upstream bug](https://github.com/Azure/acr/issues/599#issuecomment-2182544764
+))
+- Supports EntraID authentication, so works with ACR configured for public network access only (ACR basic service tier can only have public endpoints)
+
 ## Usage
 
 Config ACR as a pull-through proxy:
 ```hcl
-resource "azurerm_container_registry_cache_rule" "docker-io" {                                                        
+resource "azurerm_container_registry_cache_rule" "docker-io" {
   name                  = "docker-io"
-  container_registry_id = azurerm_container_registry.acr.id                                                           
+  container_registry_id = azurerm_container_registry.acr.id
   target_repo           = "hub/*"
   source_repo           = "docker.io/*"
-} 
+}
 ```
 
 Make sure you [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential).
