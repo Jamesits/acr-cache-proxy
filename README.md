@@ -54,3 +54,5 @@ Docker [does not support any form of authentication on registry mirrors](https:/
 ### Availability
 
 `registry-mirrors` option is failsafe. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
+
+The program is mostly stateless. HA can be achieved by simply running multiple instances of it or load-balancing them with a TCP/HTTP LB.
