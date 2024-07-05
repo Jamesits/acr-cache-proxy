@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"github.com/jamesits/acr-cache-proxy/pkg/registry"
 	"github.com/jamesits/acr-cache-proxy/pkg/utils"
-	"gopkg.in/elazarl/goproxy.v1"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 )
-
-var proxyServer *goproxy.ProxyHttpServer
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)

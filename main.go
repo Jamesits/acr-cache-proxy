@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/jamesits/acr-cache-proxy/pkg/registry"
 	"log"
+	"os"
 	"time"
 )
 
@@ -41,13 +42,18 @@ func main() {
 	upstreamRealm, upstreamService, err = registry.GetAuthMetadata(upstreamDomain, "")
 	if err != nil {
 		log.Printf("unable to get upstream registry auth config: %v\n", err)
+		os.Exit(255)
 	}
 
-	for err = updateToken(upstreamDomain); err != nil; err = updateToken(upstreamDomain) {
+	err = updateToken(upstreamDomain)
+	if err != nil {
 		log.Printf("initial token acquiring failed: %v\n", err)
+		os.Exit(255)
 	}
+
 	log.Printf("token acquired")
 
+	// renew tokens in the background
 	go func() {
 		for {
 			<-time.After(300 * time.Second)
