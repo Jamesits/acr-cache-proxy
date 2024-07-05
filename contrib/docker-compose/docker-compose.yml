@@ -1,0 +1,14 @@
+services:
+  acr-cache-proxy:
+    image: "jamesits/acr-cache-proxy:latest"
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: "always"
+    command: ["--upstream-domain", "example.azurecr.io", "--upstream-prefix", "hub"] # please change this
+    environment:
+      - "AZURE_CLIENT_ID=00000000-0000-0000-000000000000" # assuming hardcoded user-managed identity
+    volumes:
+      # mount SSL certificates inside the container
+      # assuming Debian or derivatives; path for other distros might vary
+      - "/usr/share/ca-certificates:/usr/share/ca-certificates:ro"
+      - "/etc/ssl/certs:/etc/ssl/certs:ro"

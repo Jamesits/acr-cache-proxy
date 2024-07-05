@@ -20,6 +20,9 @@ Start the server locally:
 ```shell
 acr-cache-proxy --upstream-domain example.azurecr.io --upstream-prefix hub --listen-address :8080
 ```
+Or use a service manager:
+- [Docker Compose](contrib/docker-compose)
+- [Nomad](contrib/nomad)
 
 Config your Docker daemon to use the mirror in `/etc/docker/daemon.json`:
 ```json
