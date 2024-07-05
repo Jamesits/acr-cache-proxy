@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	tokenUpdateThreshold = 300 * time.Second
-	tokenEndpointPath    = "/token"
-	username             = "00000000-0000-0000-0000-000000000000"
+	tokenUpdateThreshold     = 300 * time.Second
+	tokenUpdateCheckInterval = 30 * time.Second
+	tokenEndpointPath        = "/token"
+	username                 = "00000000-0000-0000-0000-000000000000"
 )
 
 var (
@@ -56,7 +57,7 @@ func main() {
 	// renew tokens in the background
 	go func() {
 		for {
-			<-time.After(300 * time.Second)
+			<-time.After(tokenUpdateCheckInterval)
 			err := updateToken(upstreamDomain)
 			if err != nil {
 				log.Printf("unable to renew the token: %v\n", err)
