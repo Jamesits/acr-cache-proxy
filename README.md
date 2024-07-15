@@ -51,6 +51,20 @@ Restart your Docker daemon and profit.
 - `--upstream-prefix` (optional): the cache rule prefix (without `/`)
 - `--listen-address` (optional): HTTP proxy listen address (Golang format)
 
+## Building
+
+With GoReleaser:
+
+```shell
+goreleaser build --single-target --snapshot --clean
+```
+
+Alternatively, using native Golang toolchain:
+
+```shell
+go build .
+```
+
 ## Notes
 
 ### Security
