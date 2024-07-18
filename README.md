@@ -8,7 +8,7 @@ Features:
 
 - Supports a cache rule with a prefix (works around an [upstream bug](https://github.com/Azure/acr/issues/599#issuecomment-2182544764
 ))
-- Supports EntraID authentication, so works with ACR configured for public network access only (ACR basic service tier can only have public endpoints)
+- Supports EntraID authentication (automatic through machine identity, or manually configured), so you can use the much cheaper ACR basic service tier which cannot have private endpoints
 
 ## Usage
 
@@ -21,17 +21,23 @@ resource "azurerm_container_registry_cache_rule" "docker-io" {
   source_repo           = "docker.io/*"
 }
 ```
+(If you use this ACR only for caching, use `target_repo = "*"`.)
 
-Make sure you [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential).
+Make sure you:
+- [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential)
+- assigned your identity at least [AcrPull](https://www.azadvertizer.net/azrolesadvertizer/7f951dda-4ed3-4680-a7ca-43fe172d538d.html) RBAC role on the ACR instance
 
 Start the server locally:
 ```shell
 # if using a specific user-managed identity
+# swap the GUID with your identity's client ID
 export AZURE_CLIENT_ID="00000000-0000-0000-0000-000000000000"
 # otherwise, log in first with `az login`
 
-acr-cache-proxy --upstream-domain example.azurecr.io --upstream-prefix hub --listen-address :8080
+acr-cache-proxy --upstream-domain example.azurecr.io --upstream-prefix hub --listen-address 127.0.0.1:8080
 ```
+(If you have `target_repo = "*"` setup, do not set `--upstream-prefix` here).
+
 Or use a service manager:
 - [Docker Compose](contrib/docker-compose)
 - [Nomad](contrib/nomad)
@@ -67,12 +73,17 @@ go build .
 
 ## Notes
 
+### Feature Parity
+
+- This program only proxies metadata. Azure CR serves container image layers through a redirection to a Azure Blob URL; this URL will not be proxied by us.
+- Only [OCI Distribution Specification](https://github.com/opencontainers/distribution-spec/blob/v1.0.1/spec.md) APIs are supported.
+
 ### Security
 
-Docker [does not support any form of authentication on registry mirrors](https://github.com/moby/moby/issues/30880), so no authentication can be implemented. Please protect the HTTP endpoint from untrusted networks. It's better to run one instance per host, and only listen on the loopback address.
+Docker [does not support any form of authentication on registry mirrors](https://github.com/moby/moby/issues/30880), so no authentication can be implemented. Please protect the HTTP endpoint from untrusted networks. It's recommended to run one instance per host, and only listen on the loopback address.
 
 ### Availability
 
-`registry-mirrors` option is failsafe. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
+Docker daemon's `registry-mirrors` option is failsafe. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
 
 The program is mostly stateless. HA can be achieved by simply running multiple instances of it or load-balancing them with a TCP/HTTP LB.
