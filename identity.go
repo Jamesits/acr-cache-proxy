@@ -24,6 +24,7 @@ func AcquireRegistryToken(ctx context.Context, azIdentity azcore.TokenCredential
 	tokenMu.RLock()
 	if (!forceRenew) && (aadTokenExpireTime.Sub(time.Now()) > tokenUpdateThreshold) {
 		// no need to renew
+		tokenMu.RUnlock()
 		return nil
 	}
 	tokenMu.RUnlock()
