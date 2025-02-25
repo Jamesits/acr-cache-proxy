@@ -14,14 +14,64 @@ Features:
 
 Config ACR as a pull-through proxy:
 ```hcl
-resource "azurerm_container_registry_cache_rule" "docker-io" {
-  name                  = "docker-io"
+resource "azurerm_key_vault" "kv" {
+  name                            = ""
+  location                        = ""
+  resource_group_name             = ""
+  tenant_id                       = ""
+  sku_name                        = "standard"
+  public_network_access_enabled   = true
+  enable_rbac_authorization       = true
+}
+
+resource "azurerm_key_vault_secret" "dockerhub-username" {
+  key_vault_id = azurerm_key_vault.kv.id
+  name         = "dockerhub-username"
+  value        = "your-username"
+}
+
+resource "azurerm_key_vault_secret" "dockerhub-password" {
+  key_vault_id = azurerm_key_vault.kv.id
+  name         = "dockerhub-password"
+  value        = "your-password"
+}
+
+resource "azurerm_container_registry" "acr" {
+  name                          = ""
+  resource_group_name           = ""
+  location                      = ""
+  sku                           = "Premium"
+  public_network_access_enabled = true
+}
+
+resource "azurerm_container_registry_credential_set" "dockerhub" {
+  name                  = "dockerhub"
   container_registry_id = azurerm_container_registry.acr.id
-  target_repo           = "hub/*"
+  login_server          = "docker.io"
+  identity {
+    type = "SystemAssigned"
+  }
+  authentication_credentials {
+    username_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/${azurerm_key_vault_secret.dockerhub-username.name}"
+    password_secret_id = "${azurerm_key_vault.kv.vault_uri}secrets/${azurerm_key_vault_secret.dockerhub-password.name}"
+  }
+}
+
+resource "azurerm_role_assignment" "kv-acr" {
+  principal_id         = azurerm_container_registry_credential_set.dockerhub.identity[0].principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.kv.id
+}
+
+resource "azurerm_container_registry_cache_rule" "dockerhub" {
+  name                  = "dockerhub"
+  container_registry_id = azurerm_container_registry.acr.id
   source_repo           = "docker.io/*"
+  target_repo           = "cache/dockerhub/*"
+  credential_set_id     = azurerm_container_registry_credential_set.dockerhub.id
 }
 ```
-(If you use this ACR only for caching, use `target_repo = "*"`.)
+(If you use this ACR entirely for caching, use `target_repo = "*"`.)
 
 Make sure you:
 - [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential)
@@ -84,6 +134,6 @@ Docker [does not support any form of authentication on registry mirrors](https:/
 
 ### Availability
 
-Docker daemon's `registry-mirrors` option is failsafe. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
+Docker daemon's `registry-mirrors` ~~is failsafe~~ fails silently unless you enable debug logging. If one mirror does not work, other mirrors and then the original endpoints will be tried. Just make sure you don't hit the annoying rate limit.
 
-The program is mostly stateless. HA can be achieved by simply running multiple instances of it or load-balancing them with a TCP/HTTP LB.
+The program is stateless. HA can be achieved by simply running multiple instances of it or load-balancing them with a TCP/HTTP LB.
