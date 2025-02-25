@@ -33,7 +33,7 @@ resource "azurerm_key_vault_secret" "dockerhub-username" {
 resource "azurerm_key_vault_secret" "dockerhub-password" {
   key_vault_id = azurerm_key_vault.kv.id
   name         = "dockerhub-password"
-  value        = "your-password"
+  value        = "your-access-token"
 }
 
 resource "azurerm_container_registry" "acr" {
