@@ -15,10 +15,9 @@ builds:
     main: "."
     binary: "acr-cache-proxy"
     mod_timestamp: "{{ .CommitTimestamp }}"
-    goos: ["linux", "darwin", "windows", "freebsd"]
-    goarch: ["amd64", "arm", "arm64"]
-    goarm: ["6", "7"]
-    goamd64: ["v1", "v2", "v3", "v4"]
+    goos: ["linux", "darwin", "windows"]
+    goarch: ["amd64", "arm64"]
+    goamd64: ["v3"]
     flags:
       - "-v"
       - "-trimpath"
@@ -45,9 +44,24 @@ archives:
 
 dockers:
   - dockerfile: "Dockerfile.goreleaser"
+    goarch: amd64
+    goamd64: v3
     image_templates:
-      - jamesits/acr-cache-proxy:latest
-      - jamesits/acr-cache-proxy:{{ .Version }}
+      - jamesits/acr-cache-proxy:{{ .Version }}-amd64
+    build_flag_templates:
+      - "--platform=linux/amd64"
+  - dockerfile: "Dockerfile.goreleaser"
+    goarch: arm64
+    image_templates:
+      - jamesits/acr-cache-proxy:{{ .Version }}-arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+
+docker_manifests:
+  - name_template: "jamesits/acr-cache-proxy:{{ .Version }}"
+    image_templates:
+      - jamesits/acr-cache-proxy:{{ .Version }}-amd64
+      - jamesits/acr-cache-proxy:{{ .Version }}-arm64
 
 checksum:
   name_template: "checksums.txt"
