@@ -5,8 +5,11 @@ on:
     tags:
       - v*
 
+env:
+  GOPATH: /tmp/go
+
 jobs:
-  renovate-config-validation:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
