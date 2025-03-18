@@ -36,11 +36,11 @@ builds:
         - "sudo setcap 'cap_net_bind_service=+ep' \"{{ .Path }}\""
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 archives:
   - id: "release"
-    format: "tar.xz"
+    formats: ["tar.xz"]
     wrap_in_directory: true
 
 dockers:
