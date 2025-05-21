@@ -77,7 +77,9 @@ resource "azurerm_container_registry_cache_rule" "dockerhub" {
 
 Make sure you:
 - [have Azure credentials on your device](https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#readme-defaultazurecredential)
-- assigned your identity at least [AcrPull](https://www.azadvertizer.net/azrolesadvertizer/7f951dda-4ed3-4680-a7ca-43fe172d538d.html) RBAC role on the ACR instance
+- assigned your identity with a correct role on the ACR instance
+  - RBAC only: [`AcrPull`](https://www.azadvertizer.net/azrolesadvertizer/7f951dda-4ed3-4680-a7ca-43fe172d538d.html)
+  - [ABAC](https://github.com/Azure/acr/blob/main/docs/preview/abac-repo-permissions/README.md): [`Container Registry Repository Reader`](https://www.azadvertizer.net/azrolesadvertizer/b93aa761-3e63-49ed-ac28-beffa264f7ac.html) with condition `@Request[Microsoft.ContainerRegistry/registries/repositories:name] StringStartsWithIgnoreCase 'cache/dockerhub/'`
 
 Start the server locally:
 ```shell
