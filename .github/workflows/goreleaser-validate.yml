@@ -19,6 +19,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
       - uses: crazy-max/ghaction-upx@v4
         with:
           install-only: true
